@@ -92,6 +92,7 @@ void config__init(struct mosquitto__config *config)
     config->persistent_client_expiration = 0;
     config->queue_qos0_messages = false;
     config->retain_available = true;
+    config->retain_expiry_interval = 0;
     config->set_tcp_nodelay = false;
 #if defined(WITH_SYS_TREE)
     config->sys_interval = CONFIG_MOSQ_SYS_UPDATE_INTERVAL;
