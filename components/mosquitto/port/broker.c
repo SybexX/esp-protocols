@@ -22,18 +22,22 @@ static int listeners__start_single_mqtt(struct mosquitto__listener *listener)
     int i;
     struct mosquitto__listener_sock *listensock_new;
 
-    if (net__socket_listen(listener)) {
+    if (net__socket_listen(listener))
+    {
         return 1;
     }
     listensock_count += listener->sock_count;
     listensock_new = mosquitto__realloc(listensock, sizeof(struct mosquitto__listener_sock) * (size_t)listensock_count);
-    if (!listensock_new) {
+    if (!listensock_new)
+    {
         return 1;
     }
     listensock = listensock_new;
 
-    for (i = 0; i < listener->sock_count; i++) {
-        if (listener->socks[i] == INVALID_SOCKET) {
+    for (i = 0; i < listener->sock_count; i++)
+    {
+        if (listener->socks[i] == INVALID_SOCKET)
+        {
             return 1;
         }
         listensock[listensock_index].sock = listener->socks[i];
@@ -50,7 +54,8 @@ static int listeners__add_local(const char *host, uint16_t port)
 {
     struct mosquitto__listener *listeners;
     listeners = mosquitto__realloc(db.config->listeners, sizeof(struct mosquitto__listener));
-    if (listeners == NULL) {
+    if (listeners == NULL)
+    {
         return MOSQ_ERR_NOMEM;
     }
     memset(listeners, 0, sizeof(struct mosquitto__listener));
@@ -63,10 +68,12 @@ static int listeners__add_local(const char *host, uint16_t port)
     listeners[db.config->listener_count].security_options.allow_anonymous = true;
     listeners[db.config->listener_count].port = port;
     listeners[db.config->listener_count].host = mosquitto__strdup(host);
-    if (listeners[db.config->listener_count].host == NULL) {
+    if (listeners[db.config->listener_count].host == NULL)
+    {
         return MOSQ_ERR_NOMEM;
     }
-    if (listeners__start_single_mqtt(&listeners[db.config->listener_count])) {
+    if (listeners__start_single_mqtt(&listeners[db.config->listener_count]))
+    {
         mosquitto__free(listeners[db.config->listener_count].host);
         listeners[db.config->listener_count].host = NULL;
         return MOSQ_ERR_UNKNOWN;
@@ -79,17 +86,21 @@ static void listeners__stop(void)
 {
     int i;
 
-    for (i = 0; i < db.config->listener_count; i++) {
+    for (i = 0; i < db.config->listener_count; i++)
+    {
 #ifdef WITH_WEBSOCKETS
-        if (db.config->listeners[i].ws_context) {
+        if (db.config->listeners[i].ws_context)
+        {
             lws_context_destroy(db.config->listeners[i].ws_context);
         }
         mosquitto__free(db.config->listeners[i].ws_protocol);
 #endif
     }
 
-    for (i = 0; i < listensock_count; i++) {
-        if (listensock[i].sock != INVALID_SOCKET) {
+    for (i = 0; i < listensock_count; i++)
+    {
+        if (listensock[i].sock != INVALID_SOCKET)
+        {
             COMPAT_CLOSE(listensock[i].sock);
         }
     }
@@ -128,7 +139,8 @@ int __wrap_mux__cleanup(void)
 
 static void mux_cleanup_deferred_run(void)
 {
-    if (s_mux_cleanup_deferred) {
+    if (s_mux_cleanup_deferred)
+    {
         s_mux_cleanup_deferred = 0;
         (void)__real_mux__cleanup();
     }
@@ -155,41 +167,53 @@ int mosq_broker_run(struct mosq_broker_config *broker_config)
 
     config__init(&config);
 
-    if (broker_config->tls_cfg) {
+    if (broker_config->tls_cfg)
+    {
         net__set_tls_config(broker_config->tls_cfg);
     }
-    if (broker_config->handle_message_cb) {
+    if (broker_config->handle_message_cb)
+    {
         g_mosq_message_callback = broker_config->handle_message_cb;
     }
-    if (broker_config->handle_connect_cb) {
+    if (broker_config->handle_connect_cb)
+    {
         g_mosq_connect_callback = broker_config->handle_connect_cb;
     }
 
     db.config = &config;
 
     rc = db__open(&config);
-    if (rc != MOSQ_ERR_SUCCESS) {
+    if (rc != MOSQ_ERR_SUCCESS)
+    {
         log__printf(NULL, MOSQ_LOG_ERR, "Error: Couldn't open database.");
         return rc;
     }
 
-    if (log__init(&config)) {
+    if (log__init(&config))
+    {
         rc = 1;
         return rc;
     }
+
     log__printf(NULL, MOSQ_LOG_INFO, "mosquitto version %s starting", VERSION);
-    if (db.config_file) {
+    
+    if (db.config_file)
+    {
         log__printf(NULL, MOSQ_LOG_INFO, "Config loaded from %s.", db.config_file);
-    } else {
+    }
+    else
+    {
         log__printf(NULL, MOSQ_LOG_INFO, "Using default config.");
     }
 
-    if (listeners__add_local(broker_config->host, broker_config->port)) {
+    if (listeners__add_local(broker_config->host, broker_config->port))
+    {
         return 1;
     }
 
     rc = mux__init(listensock, listensock_count);
-    if (rc) {
+    if (rc)
+    {
         return rc;
     }
 
@@ -204,7 +228,8 @@ int mosq_broker_run(struct mosq_broker_config *broker_config)
 
     log__printf(NULL, MOSQ_LOG_INFO, "mosquitto version %s terminating", VERSION);
 
-    HASH_ITER(hh_id, db.contexts_by_id, ctxt, ctxt_tmp) {
+    HASH_ITER(hh_id, db.contexts_by_id, ctxt, ctxt_tmp)
+    {
         context__send_will(ctxt);
     }
     will_delay__send_all();
@@ -219,7 +244,8 @@ int mosq_broker_run(struct mosq_broker_config *broker_config)
 
     listeners__stop();
 
-    HASH_ITER(hh_id, db.contexts_by_id, ctxt, ctxt_tmp) {
+    HASH_ITER(hh_id, db.contexts_by_id, ctxt, ctxt_tmp)
+    {
 #ifdef WITH_WEBSOCKETS
         if (!ctxt->wsi)
 #endif
@@ -227,12 +253,15 @@ int mosq_broker_run(struct mosq_broker_config *broker_config)
             context__cleanup(ctxt, true);
         }
     }
-    HASH_ITER(hh_sock, db.contexts_by_sock, ctxt, ctxt_tmp) {
+    HASH_ITER(hh_sock, db.contexts_by_sock, ctxt, ctxt_tmp)
+    {
         context__cleanup(ctxt, true);
     }
 #ifdef WITH_BRIDGE
-    for (i = 0; i < db.bridge_count; i++) {
-        if (db.bridges[i]) {
+    for (i = 0; i < db.bridge_count; i++)
+    {
+        if (db.bridges[i])
+        {
             context__cleanup(db.bridges[i], true);
         }
     }

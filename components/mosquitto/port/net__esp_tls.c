@@ -460,6 +460,15 @@ int net__socket_close(struct mosquitto *mosq)
     return rc;
 }
 
+bool net__is_connected(struct mosquitto *mosq)
+{
+#if defined(WITH_BROKER) && defined(WITH_WEBSOCKETS)
+	return mosq->sock != INVALID_SOCKET || mosq->wsi != NULL;
+#else
+	return mosq->sock != INVALID_SOCKET;
+#endif
+}
+
 int net__init(void)
 {
     return MOSQ_ERR_SUCCESS;

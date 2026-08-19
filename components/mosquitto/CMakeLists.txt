@@ -38,7 +38,6 @@ set(m_srcs
         ${m_src_dir}/handle_publish.c
         ${m_src_dir}/handle_subscribe.c
         ${m_src_dir}/handle_unsubscribe.c
-        ${m_src_dir}/keepalive.c
         ${m_src_dir}/logging.c
         ${m_src_dir}/loop.c
         ${m_src_dir}/memory_public.c
@@ -80,13 +79,18 @@ idf_component_register(SRCS ${m_srcs}
                             port/files.c
                             port/net__esp_tls.c
                             port/sysconf.c
+                            port/keepalive.c
                     PRIV_INCLUDE_DIRS port/priv_include port/priv_include/sys ${m_dir} ${m_src_dir}
                                       ${m_incl_dir} ${m_lib_dir} ${m_deps_dir}
                     INCLUDE_DIRS ${m_incl_dir} port/include
                     REQUIRES esp-tls
                     PRIV_REQUIRES sock_utils esp_timer)
 
-target_compile_definitions(${COMPONENT_LIB} PRIVATE "WITH_BROKER")
+target_compile_definitions(${COMPONENT_LIB} PRIVATE
+    "WITH_BROKER"
+    "WITH_OLD_KEEPALIVE"
+)
+
 if (CONFIG_MOSQ_ENABLE_SYS)
     target_compile_definitions(${COMPONENT_LIB} PRIVATE "WITH_SYS_TREE")
 endif()
