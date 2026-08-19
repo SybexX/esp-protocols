@@ -21,4 +21,4 @@
 #include "net/if.h"
 #include "esp_idf_version.h"
 
-#define VERSION "v2.0"
+#define VERSION "v2.0.23"

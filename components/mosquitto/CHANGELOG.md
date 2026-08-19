@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+- Updated Mosquitto from `2.0.20` to `2.0.23` (`release/2.0`).
+- Updated the ESP32-specific Mosquitto port for the new version.
+- Kept `WITH_OLD_KEEPALIVE` due to ESP32 memory constraints.
+- Fixed `context->last_msg_in` handling in the legacy keepalive implementation.
+
 ## [2.0.20~9](https://github.com/espressif/esp-protocols/commits/mosq-v2.0.20_9)
 
 ### Bug Fixes
